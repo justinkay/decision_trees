@@ -36,17 +36,57 @@ class node():
 class decision_tree():
 
     def __init__(self, data, labels):
-        pass
-        # create root node
-        # split
+        self.root = node()
+        self.split(self.root, data, labels)
         
 
     def split(self, node, data, labels):
-        pass
-        # count labels, assign to node.labels
-        # find a function and thresh to split on
+
+        
+        lcount = (sum(labels==0), sum(labels==1))
+        node.labels = lcount
+        
         # if leaf - return
-        # else - set node.func, thresh. create children, assign to parent, and call split on them.
+        if 0 in lcount:
+            return
+
+        # find a function and thresh to split on
+        # Iterate over the features
+        min_entropy = float("inf")
+        for i in range(57):
+            column = data[:,i]
+            average = (min(column) + max(column)) / 2
+            splitcol = column < average
+            left = labels[splitcol]
+            right = labels[not splitcol]
+    
+
+            # Compress the left and right labels into tuples of the counts, and calculate the entropy
+            entropy = self.get_entropy((sum(left == 0), sum(left==1)),(sum(right==0), sum(right==1)))
+            if entropy < min_entropy:
+                min_entropy = entropy
+                feature = i
+                thresh = average
+
+
+        func = lambda x: x[feature]
+        node.func = func
+        node.thresh = thresh
+        
+        left_child = node()
+        right_child = node()
+        node.set_left_child(left_child)
+        node.set_right_child(right_child)
+
+        # Recursively call split on our children
+        col = data[:, feature]
+        splitcol = col < thresh
+        left_data = data[splitcol, :]
+        right_data = data[not splitcol, :]
+        left_labels = labels[splitcol]
+        right_labels = labels[not splitcol]
+        self.split(left_child, left_data, left_labels)
+        self.split(right_child, right_data, right_labels)
 
     def classify(self, observation):
         return self.root.decide(observation)
