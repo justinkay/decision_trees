@@ -1,5 +1,6 @@
-import numpy
 import math
+import pdb
+from numpy import array
 
 class node():
 
@@ -26,8 +27,8 @@ class node():
 
     def decide(self, observation):
         if self.is_leaf():
-            return self.labels.index(max(labels))
-        if self.func(observation) < thresh:
+            return self.labels.index(max(self.labels))
+        if self.func(observation) < self.thresh:
             return self.left_child.decide(observation)
         else:
             return self.right_child.decide(observation)
@@ -40,14 +41,21 @@ class decision_tree():
         self.split(self.root, data, labels)
         
 
-    def split(self, node, data, labels):
-
+    def split(self, this_node, data, labels):
         
-        lcount = (sum(labels==0), sum(labels==1))
-        node.labels = lcount
+        try:
+            lcount = (sum(labels==0)[0], sum(labels==1)[0])
+        except:
+            pdb.set_trace()
+        this_node.labels = lcount
         
         # if leaf - return
         if 0 in lcount:
+            print lcount
+            return
+
+        if this_node.depth > 8:
+            print lcount
             return
 
         # find a function and thresh to split on
@@ -55,10 +63,17 @@ class decision_tree():
         min_entropy = float("inf")
         for i in range(57):
             column = data[:,i]
-            average = (min(column) + max(column)) / 2
+            spam = column[(labels == 1)[:,0]]
+            not_spam = column[(labels == 0)[:,0]]
+            spam_av = float(sum(spam)) / len(spam)
+            not_spam_av = float(sum(not_spam)) / len(not_spam)
+            #print not_spam.shape, spam.shape, column.shape
+            assert len(not_spam) + len(spam) == len(column)
+            average = (spam_av + not_spam_av) / 2
+            
             splitcol = column < average
             left = labels[splitcol]
-            right = labels[not splitcol]
+            right = labels[array(map(lambda x : not x, splitcol))]
     
 
             # Compress the left and right labels into tuples of the counts, and calculate the entropy
@@ -69,22 +84,28 @@ class decision_tree():
                 thresh = average
 
 
+        if min_entropy == self.get_entropy(lcount, (0, 0)):
+            print min_entropy
+            print 'here'
+            print lcount
+            return
         func = lambda x: x[feature]
-        node.func = func
-        node.thresh = thresh
+        this_node.func = func
+        this_node.thresh = thresh
         
         left_child = node()
         right_child = node()
-        node.set_left_child(left_child)
-        node.set_right_child(right_child)
+        this_node.set_left_child(left_child)
+        this_node.set_right_child(right_child)
 
         # Recursively call split on our children
         col = data[:, feature]
         splitcol = col < thresh
         left_data = data[splitcol, :]
-        right_data = data[not splitcol, :]
+        right_data = data[array(map(lambda x : not x, splitcol)), :]
         left_labels = labels[splitcol]
-        right_labels = labels[not splitcol]
+        right_labels = labels[array(map(lambda x : not x, splitcol))]
+        #print left_data.shape, right_data.shape, left_labels.shape, right_labels.shape
         self.split(left_child, left_data, left_labels)
         self.split(right_child, right_data, right_labels)
 
@@ -94,17 +115,19 @@ class decision_tree():
     # Calculates the entropy that results from a particular split of labels l1 and l2
     # l1 and l2 are tuples with the counts of each label in a particular segment
     def get_entropy(self, l1, l2):
-        entropy = 0
+        entropy1 = entropy2 = 0
         for count in l1:
             count = float(count)
             if count == 0:
                 continue
-            entropy -= count/sum(l1) * math.log(count/sum(l1),2)
+            entropy1 -= (count/sum(l1)) * math.log(count/sum(l1),2)
         for count in l2:
             count = float(count)
             if count == 0:
                 continue
-            entropy -= count/sum(l2) * math.log(count/sum(l2),2)
+            entropy2 -= (count/sum(l2)) * math.log(count/sum(l2),2)
+
+        entropy = ((entropy1 * sum(l1)) + (entropy2 * sum(l2))) / (sum(l1) + sum(l2))
 
         return entropy
 
