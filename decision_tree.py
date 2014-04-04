@@ -51,11 +51,11 @@ class decision_tree():
         
         # if leaf - return
         if 0 in lcount:
-            print lcount
+            #print lcount
             return
 
         if this_node.depth > 8:
-            print lcount
+            #print lcount
             return
 
         # find a function and thresh to split on
