@@ -26,7 +26,7 @@ class forest():
             # train num_trees decision trees
             for i in range(num_trees):
                   self.trees.append(decision_tree(data_sets[i,:,:], label_sets[i,:]))
-                  print i
+                  #print i
 
       # assumes 0-1 labels
       def classify(self, observation):

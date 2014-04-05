@@ -85,9 +85,6 @@ class decision_tree():
 
 
         if min_entropy == self.get_entropy(lcount, (0, 0)):
-            print min_entropy
-            print 'here'
-            print lcount
             return
         func = lambda x: x[feature]
         this_node.func = func

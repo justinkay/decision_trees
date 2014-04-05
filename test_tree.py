@@ -19,9 +19,17 @@ print 'score = ' + str(score)
 print 'error = ', str(1 - float(score) / 250)
 print 'max depth = ', max_depth(dt.root)
 
-
 dt = decision_tree(all_data['Xtrain'], all_data['ytrain'])
-predictions = []
-for i in range(len(all_data['Xtest'])):
-    predictions.append(dt.classify(all_data['Xtest'][i,:]))
+score = 0
+for i in range(3450):
+    score += dt.classify(all_data['Xtrain'][i,:]) == all_data['ytrain'][i][0]
 
+print 'score = ' + str(score)
+print 'error = ', str(1 - (float(score) / 3450))
+print 'max depth = ', max_depth(dt.root)
+
+#dt = decision_tree(all_data['Xtrain'], all_data['ytrain'])
+#predictions = []
+#for i in range(len(all_data['Xtest'])):
+#    predictions.append(dt.classify(all_data['Xtest'][i,:]))
+#
