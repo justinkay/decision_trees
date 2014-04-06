@@ -123,10 +123,12 @@ class decision_tree():
             if count == 0:
                 continue
             entropy2 -= (count/sum(l2)) * math.log(count/sum(l2),2)
-
         entropy = ((entropy1 * sum(l1)) + (entropy2 * sum(l2))) / (sum(l1) + sum(l2))
-
         return entropy
+
+    #gini index, want to minimize
+    def get_gini_impurity(self, l1, l2):
+        return ((min(l1) / len(l1)) * sum(l1)) + ((min(l2) / len(l2)) * sum(l2))
 
 
 
