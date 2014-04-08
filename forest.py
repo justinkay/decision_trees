@@ -4,7 +4,7 @@ from decision_tree import *
 
 class forest():
 
-      def __init__(self, data, labels, num_trees, weights=None):
+      def __init__(self, data, labels, num_trees, weights=None, randomized=False):
             self.data = data
             self.labels = labels
             self.trees = []
@@ -25,8 +25,8 @@ class forest():
                         
             # train num_trees decision trees
             for i in range(num_trees):
-                  self.trees.append(decision_tree(data_sets[i,:,:], label_sets[i,:]))
-                  print i
+                  self.trees.append(decision_tree(data_sets[i,:,:], label_sets[i,:], randomized))
+                  #print i
 
       # assumes 0-1 labels
       def classify(self, observation):
@@ -42,10 +42,5 @@ class forest():
                   total += w
                   if total >= rand_num:
                         return i[0]
-            print 'sampling fucked'
+            print 'sampling error'
             return 0
-
-
-# apparently a good way to get a better forest is to randomize the splits a bit in creating
-# the decision tree - find the top 10 or 20 features to split on and choose one at random
-# this way the trees are markedly different

@@ -1,6 +1,8 @@
 import math
 import pdb
+import random
 from numpy import array
+from operator import itemgetter
 
 class node():
 
@@ -36,12 +38,12 @@ class node():
 
 class decision_tree():
 
-    def __init__(self, data, labels):
+    def __init__(self, data, labels, randomized=False):
         self.root = node()
-        self.split(self.root, data, labels)
+        self.split(self.root, data, labels, randomized)
         
 
-    def split(self, this_node, data, labels):
+    def split(self, this_node, data, labels, randomized=False):
         
         try:
             lcount = (sum(labels==0)[0], sum(labels==1)[0])
@@ -61,6 +63,7 @@ class decision_tree():
         # find a function and thresh to split on
         # Iterate over the features
         min_entropy = float("inf")
+        entropy_tuples = []
         for i in range(57):
             column = data[:,i]
             spam = column[(labels == 1)[:,0]]
@@ -78,16 +81,23 @@ class decision_tree():
 
             # Compress the left and right labels into tuples of the counts, and calculate the entropy
             entropy = self.get_entropy((sum(left == 0), sum(left==1)),(sum(right==0), sum(right==1)))
-            if entropy < min_entropy:
-                min_entropy = entropy
-                feature = i
-                thresh = average
+            feature_tuple = (i, entropy, average)
+            entropy_tuples.append(feature_tuple)
 
-
+        # sort by entropy
+        # if "randomized", pick randomly from the top 10 splits
+        top_splits = sorted(entropy_tuples, key=itemgetter(1))
+        if randomized == True:
+            indx = random.randrange(10)
+            feature = top_splits[indx][0]
+            min_entropy = top_splits[indx][1]
+            thresh = top_splits[indx][2]
+        else:
+            feature = top_splits[0][0]
+            min_entropy = top_splits[0][1]
+            thresh = top_splits[0][2]
+        
         if min_entropy == self.get_entropy(lcount, (0, 0)):
-            #print min_entropy
-            #print 'here'
-            #print lcount
             return
         func = lambda x: x[feature]
         this_node.func = func
@@ -126,10 +136,12 @@ class decision_tree():
             if count == 0:
                 continue
             entropy2 -= (count/sum(l2)) * math.log(count/sum(l2),2)
-
         entropy = ((entropy1 * sum(l1)) + (entropy2 * sum(l2))) / (sum(l1) + sum(l2))
-
         return entropy
+
+    #gini index, want to minimize
+    def get_gini_impurity(self, l1, l2):
+        return ((min(l1) / len(l1)) * sum(l1)) + ((min(l2) / len(l2)) * sum(l2))
 
 
 
